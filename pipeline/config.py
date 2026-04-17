@@ -22,7 +22,7 @@ class Settings:
 
     # Anthropic
     ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
-    CLAUDE_MODEL: str = "claude-haiku-4-5"
+    CLAUDE_MODEL: str = "claude-haiku-4-5-20251001"
 
     # Scraping
     KENYALAW_BASE_URL: str = os.getenv(

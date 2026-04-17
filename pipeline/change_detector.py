@@ -1,8 +1,3 @@
-"""
-Status change detector — builds the "Recent Changes" feed.
-Compares current bill state against last recorded stage and emits
-new bill_stages rows when a transition is detected.
-"""
 from datetime import date, timedelta
 from typing import Optional
 
@@ -24,11 +19,6 @@ STAGE_ORDER = [
 
 
 def detect_and_record_changes() -> dict:
-    """
-    For every bill, check if current_stage has advanced since last recorded stage.
-    If it has, insert a new bill_stages row.
-    Returns stats dict.
-    """
     engine = get_engine()
     stats = {"new_transitions": 0, "bills_checked": 0}
 
@@ -56,7 +46,6 @@ def detect_and_record_changes() -> dict:
             if not current_stage:
                 continue
 
-            # If current stage != last recorded stage, record the transition
             if current_stage != last_recorded:
                 record_stage_if_new(
                     conn, bill_id, current_stage,
@@ -78,10 +67,6 @@ def detect_and_record_changes() -> dict:
 
 
 def get_recent_changes(days: int = 7) -> list[dict]:
-    """
-    Return bill stage changes observed in the last N days.
-    Used by the Streamlit Home page Recent Changes feed.
-    """
     engine = get_engine()
     with engine.connect() as conn:
         rows = conn.execute(

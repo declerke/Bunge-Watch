@@ -9,6 +9,7 @@ CREATE INDEX IF NOT EXISTS idx_bills_is_passed        ON bills(is_passed);
 CREATE INDEX IF NOT EXISTS idx_bills_chamber          ON bills(chamber);
 CREATE INDEX IF NOT EXISTS idx_bills_source           ON bills(source);
 CREATE INDEX IF NOT EXISTS idx_bills_last_updated     ON bills(last_updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_bills_foreign_checked  ON bills(foreign_match_checked_at) WHERE foreign_match_checked_at IS NULL;
 
 -- Full-text search on bill title + sponsor
 CREATE INDEX IF NOT EXISTS idx_bills_search ON bills USING GIN(search_vector);

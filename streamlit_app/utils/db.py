@@ -161,6 +161,49 @@ def get_sponsor_stats() -> pd.DataFrame:
 
 
 @st.cache_data(ttl=600)
+def get_pipeline_overview() -> pd.DataFrame:
+    with get_engine().connect() as conn:
+        return pd.read_sql(
+            text("""
+                SELECT
+                    source,
+                    chamber,
+                    current_stage,
+                    COUNT(*) AS bill_count
+                FROM bills
+                WHERE current_stage IS NOT NULL AND current_stage != ''
+                GROUP BY source, chamber, current_stage
+                ORDER BY source, chamber, bill_count DESC
+            """),
+            conn,
+        )
+
+
+@st.cache_data(ttl=600)
+def get_foreign_inspired_bills() -> pd.DataFrame:
+    with get_engine().connect() as conn:
+        return pd.read_sql(
+            text("""
+                SELECT
+                    b.bill_id, b.title, b.chamber, b.current_stage,
+                    b.sponsor, b.date_introduced,
+                    COUNT(bfm.id) AS match_count,
+                    MAX(bfm.similarity_score) AS top_score,
+                    STRING_AGG(fl.jurisdiction || ': ' || fl.law_name, '; '
+                               ORDER BY bfm.similarity_score DESC) AS matched_laws
+                FROM bills b
+                JOIN bill_foreign_matches bfm ON bfm.bill_id = b.bill_id
+                JOIN foreign_laws fl ON fl.id = bfm.foreign_law_id
+                WHERE bfm.similarity_score >= 20
+                GROUP BY b.bill_id, b.title, b.chamber, b.current_stage,
+                         b.sponsor, b.date_introduced
+                ORDER BY top_score DESC
+            """),
+            conn,
+        )
+
+
+@st.cache_data(ttl=600)
 def search_bills(query: str) -> pd.DataFrame:
     with get_engine().connect() as conn:
         return pd.read_sql(

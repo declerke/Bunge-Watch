@@ -6,10 +6,10 @@
 |--------|-------|
 | Bills tracked | 319 |
 | PDFs downloaded | 319 (100%) |
-| Bills parsed (text extracted) | 173 |
-| Keywords extracted | 1,720 rows (10 per bill) |
-| Plain-language summaries | 172 |
-| Foreign law comparisons | 10 matches across 6 bills |
+| Bills parsed (text extracted) | 223 |
+| Keywords extracted | 2,230 rows (10 per bill) |
+| Plain-language summaries | 223 |
+| Foreign law comparisons | 14 matches across 8 bills |
 | dbt models / tests | 8 models · 28 tests (all passing) |
 | Airflow DAG tasks | 11 |
 | Dashboard pages | 4 |
@@ -78,12 +78,11 @@ All 11 stages run as an **Apache Airflow 3.0 DAG** on a daily schedule (06:00 Af
 
 - **319 bills** tracked across 2 official sources (KenyaLaw + Parliament of Kenya)
 - **319 PDFs** downloaded (100% download success rate)
-- **319 bills tracked** across 2 official sources; **100% PDF download success rate**
-- **173 bills parsed** — three-tier extraction; Tesseract OCR covers ~60% of Parliament bills which are fully scanned image PDFs
+- **223 bills parsed** — three-tier extraction; Tesseract OCR covers the majority of Parliament bills which are fully scanned image PDFs
 - **OCR runs page-by-page at 150 DPI** across 4 parallel workers — peak RAM stays below 200 MB regardless of PDF size
-- **1,720 keywords** extracted (10 per bill) via YAKE + spaCy NER filtering
-- **172 plain-language summaries** generated fully offline with zero API cost (spaCy extractive)
-- **10 foreign law matches** across 6 bills — compared against 15-law corpus (Uganda, Tanzania, South Africa, UK, India, EU GDPR, AI Act, etc.)
+- **2,230 keywords** extracted (10 per bill) via YAKE + spaCy NER filtering
+- **223 plain-language summaries** generated fully offline with zero API cost (spaCy extractive)
+- **14 foreign law matches** across 8 bills — compared against 15-law corpus (Uganda, Tanzania, South Africa, UK, India, EU GDPR, AI Act, etc.)
 - **8 dbt models · 28 tests** — all passing; staging → intermediate → 4 mart tables
 - **4-page Streamlit dashboard** — Browse, Bill Detail (with URL deep-linking), Accountability, Search
 - **11-task Airflow DAG** with XCom state passing, retries, and exponential backoff

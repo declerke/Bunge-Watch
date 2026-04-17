@@ -26,6 +26,8 @@ with st.expander("🔽 Filters", expanded=True):
     year = fc3.selectbox("Year", ["All", "2026", "2025", "2024"])
     keyword = fc4.text_input("Keyword tag", placeholder="e.g. AI, finance, land")
 
+    foreign_only = st.checkbox("🌍 Foreign-inspired bills only", value=False)
+
 # ── Data ──────────────────────────────────────────────────────────────────────
 bills = get_active_bills(
     stage_filter=stage if stage != "All" else None,
@@ -33,6 +35,9 @@ bills = get_active_bills(
     year_filter=int(year) if year != "All" else None,
     keyword_filter=keyword if keyword.strip() else None,
 )
+
+if foreign_only:
+    bills = bills[bills["foreign_match_count"].fillna(0) > 0]
 
 st.caption(f"Showing {len(bills)} bill(s)")
 

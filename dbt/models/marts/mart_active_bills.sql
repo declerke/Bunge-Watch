@@ -23,7 +23,7 @@ keywords as (
 foreign_match_counts as (
     select bill_id, count(*) as foreign_match_count
     from {{ source('bungewatch', 'bill_foreign_matches') }}
-    where similarity_score >= 30
+    where similarity_score >= 20
     group by bill_id
 )
 

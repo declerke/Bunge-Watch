@@ -95,7 +95,7 @@ All stages run as an Airflow 3.0 DAG on a daily schedule (06:00 Africa/Nairobi).
 | Scraping | Playwright (Chromium headless), BeautifulSoup4 |
 | PDF parsing | pdfplumber, PyMuPDF (fitz), Tesseract OCR, pdf2image |
 | NLP | spaCy (`en_core_web_sm`), YAKE, TF-IDF (scikit-learn) |
-| Data storage | PostgreSQL 17 |
+| Data storage | PostgreSQL 15 |
 | Data transformation | dbt-core + dbt-postgres |
 | Dashboard | Streamlit |
 | Containerisation | Docker Compose (3 services: postgres, airflow, streamlit) |

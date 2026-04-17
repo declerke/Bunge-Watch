@@ -65,10 +65,11 @@ CREATE TABLE IF NOT EXISTS bills (
     assent_date      DATE,
     source_url       TEXT,
     pdf_url          TEXT,
-    text_sha256      VARCHAR(64),
-    search_vector    TSVECTOR,
-    first_seen_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
-    last_updated_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+    text_sha256                VARCHAR(64),
+    search_vector              TSVECTOR,
+    foreign_match_checked_at   TIMESTAMPTZ,
+    first_seen_at              TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    last_updated_at            TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS bill_stages (

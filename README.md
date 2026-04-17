@@ -2,6 +2,18 @@
 
 **A production-grade data engineering pipeline that scrapes, parses, and NLP-enriches every bill from Kenya's Parliament — bridging the gap between raw government PDFs and actionable civic intelligence.**
 
+| Metric | Value |
+|--------|-------|
+| Bills tracked | 319 |
+| PDFs downloaded | 319 (100%) |
+| Bills parsed (text extracted) | 155+ |
+| Keywords extracted | 1,410+ rows (10 per bill) |
+| Plain-language summaries | 141+ |
+| Foreign law comparisons | 10 matches across 6 bills |
+| dbt models / tests | 8 models · 28 tests (all passing) |
+| Airflow DAG tasks | 11 |
+| Dashboard pages | 4 |
+
 ---
 
 ## 🎯 Project Goal

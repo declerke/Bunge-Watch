@@ -1,4 +1,3 @@
-"""Database engine, session factory, and upsert helpers."""
 from contextlib import contextmanager
 from typing import Any
 
@@ -42,7 +41,6 @@ def session_scope():
 
 
 def upsert_bill(conn, bill: dict[str, Any]) -> str:
-    """Insert or update a bill row. Returns 'inserted' or 'updated'."""
     result = conn.execute(
         text("""
             INSERT INTO bills (
@@ -56,11 +54,11 @@ def upsert_bill(conn, bill: dict[str, Any]) -> str:
             )
             ON CONFLICT (bill_id) DO UPDATE SET
                 current_stage   = EXCLUDED.current_stage,
-                is_passed       = EXCLUDED.is_passed,
-                assent_date     = EXCLUDED.assent_date,
-                sponsor         = COALESCE(EXCLUDED.sponsor, bills.sponsor),
-                pdf_url         = COALESCE(EXCLUDED.pdf_url, bills.pdf_url),
-                gazette_no      = COALESCE(EXCLUDED.gazette_no, bills.gazette_no),
+                is_passed        = EXCLUDED.is_passed,
+                assent_date      = EXCLUDED.assent_date,
+                sponsor          = COALESCE(EXCLUDED.sponsor, bills.sponsor),
+                pdf_url          = COALESCE(EXCLUDED.pdf_url, bills.pdf_url),
+                gazette_no       = COALESCE(EXCLUDED.gazette_no, bills.gazette_no),
                 last_updated_at = NOW()
             RETURNING (xmax = 0) AS is_new
         """),
@@ -71,7 +69,6 @@ def upsert_bill(conn, bill: dict[str, Any]) -> str:
 
 
 def record_stage_if_new(conn, bill_id: str, stage_name: str, stage_date=None, source: str = None):
-    """Record a stage transition only if this exact stage hasn't been recorded yet."""
     conn.execute(
         text("""
             INSERT INTO bill_stages (bill_id, stage_name, stage_date, source)

@@ -176,6 +176,16 @@ def match_foreign_laws(bill_id: str, bill_title: str, bill_text: str,
     return matches
 
 
+def _mark_checked(engine, bill_id: str):
+    """Stamp foreign_match_checked_at so bills with no matches aren't re-scanned."""
+    with engine.connect() as conn:
+        conn.execute(
+            text("UPDATE bills SET foreign_match_checked_at = NOW() WHERE bill_id = :bid"),
+            {"bid": bill_id},
+        )
+        conn.commit()
+
+
 def match_all_bills() -> dict:
     """Run foreign law matching for all bills with parsed text."""
     engine = get_engine()
@@ -196,10 +206,7 @@ def match_all_bills() -> dict:
                 WHERE t.parse_status = 'success'
                   AND t.full_text IS NOT NULL
                   AND b.text_sha256 IS NOT NULL
-                  AND NOT EXISTS (
-                      SELECT 1 FROM bill_foreign_matches bfm
-                      WHERE bfm.bill_id = b.bill_id
-                  )
+                  AND b.foreign_match_checked_at IS NULL
                 GROUP BY b.bill_id, b.title, t.full_text, b.text_sha256
             """)
         ).fetchall()
@@ -211,6 +218,7 @@ def match_all_bills() -> dict:
             result = match_foreign_laws(
                 bill_id, title, full_text, list(keywords or []), text_sha256
             )
+            _mark_checked(engine, bill_id)
             if result is None:
                 stats["cached"] += 1
             elif result:

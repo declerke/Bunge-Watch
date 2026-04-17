@@ -114,7 +114,8 @@ CREATE TABLE IF NOT EXISTS foreign_laws (
     summary       TEXT,
     full_text_url TEXT,
     keywords      TEXT[],
-    seeded_at     TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+    seeded_at     TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    UNIQUE (jurisdiction, law_name)
 );
 
 CREATE TABLE IF NOT EXISTS bill_foreign_matches (

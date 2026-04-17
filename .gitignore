@@ -16,6 +16,9 @@ build/
 # Personal docs (never push)
 projectsummary.md
 
+# Claude Code session files
+.claude/
+
 # PDFs and downloaded data
 data/
 *.pdf

@@ -25,7 +25,20 @@ if bills.empty:
     st.stop()
 
 bill_options = dict(zip(bills["title"], bills["bill_id"]))
-selected_title = st.selectbox("Select a bill", list(bill_options.keys()))
+id_to_title = {v: k for k, v in bill_options.items()}
+
+# Support direct URL linking: ?bill_id=PARL-XYZ
+url_bill_id = st.query_params.get("bill_id")
+if url_bill_id and url_bill_id in id_to_title:
+    default_title = id_to_title[url_bill_id]
+else:
+    default_title = list(bill_options.keys())[0]
+
+selected_title = st.selectbox(
+    "Select a bill",
+    list(bill_options.keys()),
+    index=list(bill_options.keys()).index(default_title),
+)
 bill_id = bill_options[selected_title]
 
 data = get_bill_detail(bill_id)

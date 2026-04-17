@@ -74,10 +74,11 @@ for _, bill in bills.iterrows():
             )
             st.markdown(tag_html, unsafe_allow_html=True)
 
-        bc1, bc2, bc3 = st.columns([1, 1, 6])
+        bc1, bc2, bc3, bc4 = st.columns([1, 1, 1, 5])
         if bill.get("source_url"):
             bc1.link_button("Kenya Law", bill["source_url"], use_container_width=True)
         if bill.get("pdf_url"):
             bc2.link_button("PDF", bill["pdf_url"], use_container_width=True)
+        bc3.link_button("Detail →", f"./Bill_Detail?bill_id={bill['bill_id']}", use_container_width=True)
 
 render_footer()

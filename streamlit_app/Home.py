@@ -25,7 +25,7 @@ st.markdown(
         </p>
         <p style='font-size:0.95em;color:#888'>
             Powered by real-time scraping from Kenya Law and Parliament of Kenya.
-            Summaries by Claude AI.
+            NLP summaries and keyword extraction run fully offline.
         </p>
     </div>
     """,

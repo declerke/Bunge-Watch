@@ -144,7 +144,7 @@ def get_dashboard_stats() -> dict:
                     (SELECT count(*) FROM bills
                      WHERE EXISTS (
                          SELECT 1 FROM bill_foreign_matches bfm
-                         WHERE bfm.bill_id = bills.bill_id AND bfm.similarity_score >= 40
+                         WHERE bfm.bill_id = bills.bill_id AND bfm.similarity_score >= 20
                      ))                                                             AS foreign_inspired
             """)
         ).fetchone()

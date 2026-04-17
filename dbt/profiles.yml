@@ -1,0 +1,12 @@
+bungewatch:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: "{{ env_var('POSTGRES_HOST', 'localhost') }}"
+      user: "{{ env_var('POSTGRES_USER', 'bungewatch') }}"
+      password: "{{ env_var('POSTGRES_PASSWORD', 'bungewatch') }}"
+      port: "{{ env_var('POSTGRES_PORT', '5432') | int }}"
+      dbname: "{{ env_var('POSTGRES_DB', 'bungewatch') }}"
+      schema: public
+      threads: 4

@@ -60,7 +60,7 @@ st.divider()
 
 # ── Plain-English Summary ─────────────────────────────────────────────────────
 st.subheader("Plain-English Summary")
-st.caption("🤖 AI-generated summary by Claude Haiku. Always refer to the official PDF for authoritative text.")
+st.caption("🤖 Auto-generated summary using NLP (spaCy extractive). Always refer to the official PDF for authoritative text.")
 
 if bill.get("summary_short"):
     st.info(f"**In brief:** {bill['summary_short']}")

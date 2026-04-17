@@ -95,11 +95,12 @@ def get_recent_changes(days: int = 7) -> list[dict]:
                     b.chamber
                 FROM bill_stages bs
                 JOIN bills b ON b.bill_id = bs.bill_id
-                WHERE bs.observed_at >= NOW() - INTERVAL ':days days'
+                WHERE bs.observed_at >= NOW() - (:days * INTERVAL '1 day')
                   AND bs.stage_name != 'Published'
                 ORDER BY bs.observed_at DESC
                 LIMIT 50
-            """).bindparams(days=days)
+            """),
+            {"days": days}
         ).fetchall()
 
     return [

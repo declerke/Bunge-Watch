@@ -1,8 +1,3 @@
-"""
-Keyword extraction using spaCy NER + YAKE.
-YAKE is used over KeyBERT to avoid heavy torch dependency.
-Top 10 keywords per bill stored in bill_keywords table.
-"""
 from typing import Optional
 
 from sqlalchemy import text
@@ -30,7 +25,7 @@ def _get_yake():
         import yake
         _yake = yake.KeywordExtractor(
             lan="en",
-            n=3,         # up to 3-gram phrases
+            n=3,
             dedupLim=0.7,
             top=15,
         )
@@ -38,20 +33,15 @@ def _get_yake():
 
 
 def extract_keywords(text_content: str) -> list[tuple[str, float]]:
-    """
-    Return list of (keyword, score) tuples. Score is normalised 0–1,
-    where higher = more relevant (YAKE raw scores are inverted).
-    """
     if not text_content or len(text_content.strip()) < 100:
         return []
 
     extractor = _get_yake()
-    raw = extractor.extract_keywords(text_content[:8000])  # cap at 8K chars
+    raw = extractor.extract_keywords(text_content[:8000])
 
     if not raw:
         return []
 
-    # YAKE: lower score = more relevant. Normalise to 0-1 where 1 = most relevant.
     max_score = max(s for _, s in raw) or 1.0
     normalised = [(kw, round(1 - (s / max_score), 4)) for kw, s in raw]
     normalised.sort(key=lambda x: x[1], reverse=True)
@@ -60,7 +50,6 @@ def extract_keywords(text_content: str) -> list[tuple[str, float]]:
 
 
 def enrich_bill_keywords(bill_id: str, text_content: str) -> int:
-    """Extract and store keywords for one bill. Returns count stored."""
     keywords = extract_keywords(text_content)
     if not keywords:
         return 0
@@ -84,7 +73,6 @@ def enrich_bill_keywords(bill_id: str, text_content: str) -> int:
 
 
 def enrich_all_bills() -> dict:
-    """Enrich keywords for all bills with parsed text but no keywords yet."""
     engine = get_engine()
     stats = {"enriched": 0, "skipped": 0}
 

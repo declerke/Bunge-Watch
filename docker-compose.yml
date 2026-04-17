@@ -1,0 +1,158 @@
+x-airflow-common: &airflow-common
+  build:
+    context: .
+    dockerfile: Dockerfile.airflow
+  environment: &airflow-common-env
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/airflow
+    AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW__CORE__FERNET_KEY}
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    AIRFLOW__LOGGING__LOGGING_LEVEL: INFO
+    # Airflow 3: Task Execution API — scheduler must know where api-server lives
+    AIRFLOW__CORE__EXECUTION_API_SERVER_URL: "http://airflow-api-server:8080/execution/"
+    # Airflow 3: dag-processor — raise timeout so IPC can recover under load
+    AIRFLOW__DAG_PROCESSOR__DAG_FILE_PROCESSOR_TIMEOUT: '600'
+    AIRFLOW__DAG_PROCESSOR__MIN_FILE_PROCESS_INTERVAL: '60'
+    # Airflow 3: shared JWT secret — all services must use the same value
+    AIRFLOW__API_AUTH__JWT_SECRET: ${AIRFLOW__API_AUTH__JWT_SECRET}
+    # Airflow 3: SimpleAuthManager replaces FAB
+    AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_USERS: "admin:Admin"
+    AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_PASSWORDS_FILE: "/opt/airflow/project/simple_auth_manager_passwords.json"
+    # Application env — passed through to DAG tasks
+    POSTGRES_USER: ${POSTGRES_USER}
+    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    POSTGRES_DB: ${POSTGRES_DB}
+    POSTGRES_HOST: postgres
+    POSTGRES_PORT: 5432
+    ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+    PDF_STORAGE_PATH: /opt/airflow/data/pdfs
+    KENYALAW_BASE_URL: ${KENYALAW_BASE_URL:-https://kenyalaw.org/kl/index.php}
+    PARLIAMENT_BASE_URL: ${PARLIAMENT_BASE_URL:-https://www.parliament.go.ke}
+    SCRAPE_YEARS: ${SCRAPE_YEARS:-2024,2025,2026}
+    REQUEST_DELAY_SECONDS: ${REQUEST_DELAY_SECONDS:-2}
+  volumes:
+    - ./dags:/opt/airflow/dags
+    - ./pipeline:/opt/airflow/pipeline
+    - ./scrapers:/opt/airflow/scrapers
+    - ./seeds:/opt/airflow/seeds
+    - ./sql:/opt/airflow/sql
+    - ./dbt:/opt/airflow/dbt
+    - ./scripts:/opt/airflow/scripts
+    - ./project:/opt/airflow/project
+    - airflow_logs:/opt/airflow/logs
+    - ./data/pdfs:/opt/airflow/data/pdfs
+  depends_on:
+    postgres:
+      condition: service_healthy
+  restart: unless-stopped
+
+services:
+
+  # ── PostgreSQL ─────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/000_init_databases.sh:/docker-entrypoint-initdb.d/000_init_databases.sh
+      - ./sql/001_schema.sql:/docker-entrypoint-initdb.d/001_schema.sql
+      - ./sql/002_indexes.sql:/docker-entrypoint-initdb.d/002_indexes.sql
+      - ./sql/003_functions.sql:/docker-entrypoint-initdb.d/003_functions.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}"]
+      interval: 10s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+
+  # ── Airflow Init (one-shot) ────────────────────────────────────────────────
+  airflow-init:
+    <<: *airflow-common
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        mkdir -p /opt/airflow/project
+        python3 -c "
+        import json, os
+        path = '/opt/airflow/project/simple_auth_manager_passwords.json'
+        open(path, 'w').write(json.dumps({'admin': os.environ['AIRFLOW_ADMIN_PASSWORD']}))
+        print('Passwords file written to', path)
+        "
+        airflow db migrate
+    environment:
+      <<: *airflow-common-env
+      AIRFLOW_ADMIN_PASSWORD: ${AIRFLOW_ADMIN_PASSWORD}
+    restart: "no"
+
+  # ── Airflow API Server (replaces webserver in Airflow 3) ──────────────────
+  airflow-api-server:
+    <<: *airflow-common
+    command: api-server --workers 1
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/api/v2/monitor/health"]
+      interval: 30s
+      retries: 5
+      start_period: 60s
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+
+  # ── Airflow Scheduler ─────────────────────────────────────────────────────
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+    healthcheck:
+      test: ["CMD", "airflow", "jobs", "check", "--job-type", "SchedulerJob", "--local"]
+      interval: 60s
+      timeout: 60s
+      retries: 3
+      start_period: 300s
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+
+  # ── Airflow DAG Processor (mandatory separate service in Airflow 3) ───────
+  airflow-dag-processor:
+    <<: *airflow-common
+    command: dag-processor
+    healthcheck:
+      test: ["CMD", "airflow", "jobs", "check", "--job-type", "DagProcessorJob", "--local"]
+      interval: 60s
+      timeout: 60s
+      retries: 3
+      start_period: 300s
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+
+  # ── Streamlit ─────────────────────────────────────────────────────────────
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile.streamlit
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./streamlit_app:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  airflow_logs:

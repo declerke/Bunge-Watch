@@ -1,0 +1,40 @@
+# Environment
+.env
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+
+# Personal docs (never push)
+projectsummary.md
+
+# PDFs and downloaded data
+data/
+*.pdf
+
+# dbt
+dbt/dbt_packages/
+dbt/target/
+dbt/logs/
+dbt/.user.yml
+
+# Streamlit secrets (prod credentials)
+streamlit_app/.streamlit/secrets.toml
+
+# Airflow 3 SimpleAuthManager passwords (generated at runtime)
+project/
+
+# Build logs
+build.log
+
+# OS
+.DS_Store
+Thumbs.db

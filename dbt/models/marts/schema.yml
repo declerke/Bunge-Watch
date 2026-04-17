@@ -1,0 +1,52 @@
+version: 2
+
+models:
+  - name: mart_active_bills
+    description: "Currently active (not yet assented) bills enriched with summaries, keywords, and foreign match count."
+    columns:
+      - name: bill_id
+        tests:
+          - unique
+          - not_null
+      - name: title
+        tests:
+          - not_null
+      - name: current_stage
+        tests:
+          - not_null
+      - name: foreign_match_count
+        tests:
+          - not_null
+
+  - name: mart_sponsor_stats
+    description: "Per-sponsor accountability: bills introduced, passed, pending, and pass rate."
+    columns:
+      - name: sponsor
+        tests:
+          - not_null
+      - name: bills_introduced
+        tests:
+          - not_null
+      - name: pass_rate_pct
+        description: "NULL when sponsor has 0 bills (division guard)"
+
+  - name: mart_bill_timeline
+    description: "Stage transitions in the last 30 days — powers the Recent Changes feed."
+    columns:
+      - name: bill_id
+        tests:
+          - not_null
+      - name: stage_name
+        tests:
+          - not_null
+
+  - name: mart_keyword_frequency
+    description: "Keyword frequency across all bills — powers search facets and keyword cloud."
+    columns:
+      - name: keyword
+        tests:
+          - unique
+          - not_null
+      - name: bill_count
+        tests:
+          - not_null

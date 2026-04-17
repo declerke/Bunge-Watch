@@ -1,0 +1,30 @@
+version: 2
+
+models:
+  - name: int_bills_unified
+    description: "Deduplicated bills from both sources. kenyalaw wins on metadata; parliament wins on PDF URL."
+    columns:
+      - name: bill_id
+        tests:
+          - unique
+          - not_null
+      - name: title
+        tests:
+          - not_null
+      - name: source
+        tests:
+          - accepted_values:
+              values: ['kenyalaw', 'parliament', 'both']
+
+  - name: int_bill_stages
+    description: "Bill stage history with ordering. Deduplicated to one row per bill+stage."
+    columns:
+      - name: bill_id
+        tests:
+          - not_null
+      - name: stage_name
+        tests:
+          - not_null
+      - name: stage_order
+        tests:
+          - not_null

@@ -1,0 +1,48 @@
+version: 2
+
+sources:
+  - name: bungewatch
+    schema: public
+    tables:
+      - name: bills
+      - name: bill_stages
+      - name: bill_keywords
+      - name: bill_summaries
+      - name: bill_foreign_matches
+      - name: foreign_laws
+      - name: scrape_runs
+      - name: claude_api_calls
+
+models:
+  - name: stg_kenyalaw_bills
+    description: "Cleaned Kenya Law bills — one row per bill from kenyalaw.org"
+    columns:
+      - name: bill_id
+        description: "Stable unique bill identifier"
+        tests:
+          - unique
+          - not_null
+      - name: title
+        tests:
+          - not_null
+      - name: current_stage
+        tests:
+          - not_null
+      - name: chamber
+        tests:
+          - accepted_values:
+              values: ['NA', 'SENATE']
+
+  - name: stg_parliament_bills
+    description: "Cleaned Parliament bills — one row per bill from parliament.go.ke"
+    columns:
+      - name: bill_id
+        tests:
+          - unique
+          - not_null
+      - name: title
+        tests:
+          - not_null
+      - name: current_stage
+        tests:
+          - not_null

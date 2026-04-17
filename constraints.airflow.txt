@@ -1,0 +1,9 @@
+# Minimal constraints for Airflow 3.0.0 compatibility
+# These prevent providers from upgrading Airflow core deps to incompatible versions.
+# fastapi 0.136+ removed GenerateJsonSchema from fastapi._compat, breaking cadwyn 5.3.3
+fastapi==0.115.12
+fastapi-cli==0.0.7
+cadwyn==5.3.3
+# Prevent providers from pulling in apache-airflow-core 3.1+ which upgrades fastapi
+apache-airflow-core==3.0.0
+apache-airflow==3.0.0

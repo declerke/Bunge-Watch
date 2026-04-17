@@ -90,7 +90,7 @@ with DAG(
 
     def _parse_pdfs(**ctx):
         from pipeline.pdf_parser import parse_all_downloaded
-        stats = parse_all_downloaded()
+        stats = parse_all_downloaded(years=[2025, 2026])
         ctx["ti"].xcom_push(key="parse_stats", value=stats)
 
     t_parse_pdfs = PythonOperator(

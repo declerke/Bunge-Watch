@@ -176,10 +176,15 @@ def _update_bill_hash(bill_id: str, sha256: str):
         conn.commit()
 
 
-def parse_all_downloaded() -> dict:
+def parse_all_downloaded(years: list[int] | None = None) -> dict:
     """Parse PDFs for all bills with a successful download but no text yet.
     Uses 4 parallel workers — each processes one PDF at a time (page-by-page
     internally) so RAM stays flat regardless of PDF size.
+
+    Args:
+        years: If provided, only parse bills whose bill_id ends with one of
+               these years (e.g. [2025, 2026]). Filters by the year suffix
+               in the PARL-xxx-YYYY bill_id pattern.
     """
     import threading
     from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -188,18 +193,29 @@ def parse_all_downloaded() -> dict:
     stats = {"parsed": 0, "failed": 0, "skipped": 0}
     lock = threading.Lock()
 
+    year_filter = ""
+    year_params: dict = {}
+    if years:
+        clauses = " OR ".join(f"p.bill_id LIKE :y{i}" for i, _ in enumerate(years))
+        year_filter = f"AND ({clauses})"
+        year_params = {f"y{i}": f"%-{y}" for i, y in enumerate(years)}
+
     with engine.connect() as conn:
         rows = conn.execute(
-            text("""
+            text(f"""
                 SELECT p.bill_id, p.local_path
                 FROM raw_bill_pdfs p
+                JOIN bills b ON b.bill_id = p.bill_id
                 WHERE p.fetch_status = 'success'
+                  AND b.source = 'parliament'
                   AND NOT EXISTS (
                       SELECT 1 FROM raw_bill_text t
                       WHERE t.bill_id = p.bill_id AND t.parse_status = 'success'
                   )
+                  {year_filter}
                 ORDER BY p.bill_id
-            """)
+            """),
+            year_params,
         ).fetchall()
 
     log.info(f"PDFs pending text extraction: {len(rows)} (4 parallel workers)")

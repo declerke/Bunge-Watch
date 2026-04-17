@@ -320,9 +320,3 @@ docker exec bungewatch-airflow-scheduler-1 bash -c "
 - **Streamlit multi-page dashboard with URL deep-linking** — `st.query_params.get("bill_id")` enables shareable direct links to individual bill detail pages; `@st.cache_data(ttl=600)` caches all database queries; the Accountability page serves separate sections for the pipeline-wide stage breakdown (all 319 bills) and the sponsor leaderboard (KenyaLaw-only), with a clear data-coverage note for each
 
 - **Civic technology applied to public accountability** — the entire system is designed around a real governance gap: Kenyan citizens have no searchable, understandable interface to their Parliament's legislative output; BungeWatch treats that as a data engineering problem and solves it end-to-end with open-source tooling and zero recurring cloud cost
-
----
-
-## License
-
-MIT

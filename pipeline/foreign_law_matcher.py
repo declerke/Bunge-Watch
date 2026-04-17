@@ -1,15 +1,3 @@
-"""
-Foreign law comparison — keyword-overlap similarity (free, no API).
-
-For each bill we compare its YAKE keywords against the title + summary text
-of every foreign law in the database using TF-IDF cosine similarity computed
-locally via scikit-learn.
-
-Returns the top-3 foreign laws with similarity_score in [0, 100] and a
-plain-English explanation built from the overlap terms.
-
-Cache key: bill's text_sha256. Re-runs only when text changes.
-"""
 import math
 from typing import Optional
 
@@ -22,7 +10,6 @@ log = get_logger("foreign_law_matcher")
 
 
 def _tokenise(s: str) -> list[str]:
-    """Lowercase alpha-only tokens, length ≥ 3, excluding stopwords."""
     _STOP = {
         "the", "and", "for", "that", "this", "with", "from", "are", "has",
         "have", "been", "will", "shall", "may", "any", "all", "its", "their",
@@ -59,9 +46,8 @@ def _cosine(vec_a: dict[str, float], vec_b: dict[str, float]) -> float:
 
 
 def _overlap_terms(vec_a: dict[str, float],
-                   vec_b: dict[str, float],
-                   top_n: int = 6) -> list[str]:
-    """Return the highest-weighted shared terms."""
+                    vec_b: dict[str, float],
+                    top_n: int = 6) -> list[str]:
     shared = {w: (vec_a[w] + vec_b[w]) / 2
               for w in set(vec_a) & set(vec_b)}
     return sorted(shared, key=lambda w: shared[w], reverse=True)[:top_n]
@@ -85,10 +71,6 @@ def _build_explanation(bill_title: str, law_name: str,
 def match_foreign_laws(bill_id: str, bill_title: str, bill_text: str,
                         bill_keywords: list[str],
                         text_sha256: str) -> Optional[list[dict]]:
-    """
-    Compare bill against all seeded foreign laws using keyword TF-IDF cosine.
-    Returns list of match dicts or None if already cached / no foreign laws.
-    """
     engine = get_engine()
 
     with engine.connect() as conn:
@@ -165,7 +147,6 @@ def match_foreign_laws(bill_id: str, bill_title: str, bill_text: str,
 
 
 def _mark_checked(engine, bill_id: str):
-    """Stamp foreign_match_checked_at so bills with no matches aren't re-scanned."""
     with engine.connect() as conn:
         conn.execute(
             text("UPDATE bills SET foreign_match_checked_at = NOW() WHERE bill_id = :bid"),
@@ -175,7 +156,6 @@ def _mark_checked(engine, bill_id: str):
 
 
 def match_all_bills() -> dict:
-    """Run foreign law matching for all bills with parsed text."""
     engine = get_engine()
     stats = {"matched": 0, "cached": 0, "failed": 0, "no_laws": 0}
 
@@ -183,11 +163,11 @@ def match_all_bills() -> dict:
         rows = conn.execute(
             text("""
                 SELECT b.bill_id, b.title, t.full_text, b.text_sha256,
-                       COALESCE(
-                           array_agg(bk.keyword ORDER BY bk.relevance_score DESC)
-                           FILTER (WHERE bk.keyword IS NOT NULL),
-                           '{}'
-                       ) AS keywords
+                        COALESCE(
+                            array_agg(bk.keyword ORDER BY bk.relevance_score DESC)
+                            FILTER (WHERE bk.keyword IS NOT NULL),
+                            '{}'
+                        ) AS keywords
                 FROM bills b
                 JOIN raw_bill_text t ON t.bill_id = b.bill_id
                 LEFT JOIN bill_keywords bk ON bk.bill_id = b.bill_id

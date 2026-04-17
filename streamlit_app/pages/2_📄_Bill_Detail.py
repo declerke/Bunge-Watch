@@ -16,7 +16,6 @@ from components.footer import render_footer
 
 st.title("📄 Bill Detail")
 
-# ── Bill selector ─────────────────────────────────────────────────────────────
 bills = get_active_bills()
 
 if bills.empty:
@@ -27,7 +26,6 @@ if bills.empty:
 bill_options = dict(zip(bills["title"], bills["bill_id"]))
 id_to_title = {v: k for k, v in bill_options.items()}
 
-# Support direct URL linking: ?bill_id=PARL-XYZ
 url_bill_id = st.query_params.get("bill_id")
 if url_bill_id and url_bill_id in id_to_title:
     default_title = id_to_title[url_bill_id]
@@ -53,7 +51,6 @@ if not bill:
 
 st.divider()
 
-# ── Bill header ───────────────────────────────────────────────────────────────
 st.subheader(bill.get("title", "—"))
 
 meta_c1, meta_c2, meta_c3, meta_c4 = st.columns(4)
@@ -64,14 +61,12 @@ meta_c4.metric("Gazette No.", bill.get("gazette_no") or "—")
 
 st.divider()
 
-# ── Stage progress ────────────────────────────────────────────────────────────
 st.subheader("Legislative Journey")
 completed = [s["stage_name"] for s in stages]
 render_stage_progress(bill.get("current_stage", "Published"), completed)
 
 st.divider()
 
-# ── Plain-English Summary ─────────────────────────────────────────────────────
 st.subheader("Plain-English Summary")
 st.caption("🤖 Auto-generated summary using NLP (spaCy extractive). Always refer to the official PDF for authoritative text.")
 
@@ -91,7 +86,6 @@ if bill.get("source_url"):
 
 st.divider()
 
-# ── Keyword Tags ──────────────────────────────────────────────────────────────
 if keywords:
     st.subheader("Key Topics")
     tag_html = " ".join(
@@ -102,7 +96,6 @@ if keywords:
     st.markdown(tag_html, unsafe_allow_html=True)
     st.divider()
 
-# ── Foreign Law Comparison ────────────────────────────────────────────────────
 st.subheader("🌍 Similar Foreign Laws")
 st.caption(
     "Does this bill resemble legislation from other countries? "

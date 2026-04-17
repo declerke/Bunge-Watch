@@ -15,7 +15,6 @@ from utils.db import get_dashboard_stats, get_recent_changes, get_active_bills
 from utils.formatting import format_date, stage_badge, chamber_label
 from components.footer import render_footer
 
-# ── Hero ───────────────────────────────────────────────────────────────────────
 st.markdown(
     """
     <div style='text-align:center;padding:2rem 0 1rem'>
@@ -34,7 +33,6 @@ st.markdown(
 
 st.divider()
 
-# ── KPI Cards ─────────────────────────────────────────────────────────────────
 stats = get_dashboard_stats()
 
 col1, col2, col3, col4 = st.columns(4)
@@ -49,7 +47,6 @@ col4.metric("Possibly Foreign-Inspired", stats.get("foreign_inspired", 0),
 
 st.divider()
 
-# ── Recent Changes ────────────────────────────────────────────────────────────
 st.subheader("📢 Recent Changes")
 st.caption("Stage transitions in the last 7 days")
 
@@ -67,7 +64,6 @@ else:
 
 st.divider()
 
-# ── Featured Bills ────────────────────────────────────────────────────────────
 st.subheader("📌 Latest Bills")
 st.caption("Most recently updated active bills")
 

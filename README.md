@@ -109,11 +109,23 @@ All 11 stages run as an **Apache Airflow 3.0 DAG** on a daily schedule (06:00 Af
 
 *Full extracted text, top 10 YAKE keywords, 3–5 sentence plain-language summary, and foreign law comparison matches.*
 
-### Accountability — Sponsor Analytics
+### Accountability — Bill Pipeline Overview
 
 ![Accountability](assets/accountability.png)
 
-*Sponsor league table, stage funnel, and bills-per-session trends from dbt mart tables.*
+*Stage distribution and source/chamber breakdown for all 319 bills.*
+
+### Accountability — Foreign-Inspired Bills
+
+![Foreign-Inspired Bills](assets/foreign_inspired_accountability.png)
+
+*Bills with TF-IDF cosine similarity ≥ 20 against the 15-law foreign reference corpus, with matched jurisdictions and similarity scores.*
+
+### Accountability — Sponsor Leaderboard
+
+![Sponsor Leaderboard](assets/sponsor_leaderboard_accountability.png)
+
+*Sponsor league table with pass rates (KenyaLaw bills). Note: Parliament.go.ke does not publish sponsor names on the bill listing page.*
 
 ### Search — Full-Text Search
 

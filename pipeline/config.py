@@ -6,7 +6,6 @@ load_dotenv()
 
 
 class Settings:
-    # Database
     POSTGRES_USER: str = os.getenv("POSTGRES_USER", "bungewatch")
     POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "bungewatch")
     POSTGRES_DB: str = os.getenv("POSTGRES_DB", "bungewatch")
@@ -20,11 +19,9 @@ class Settings:
             f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         )
 
-    # Anthropic
     ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
     CLAUDE_MODEL: str = "claude-haiku-4-5-20251001"
 
-    # Scraping
     KENYALAW_BASE_URL: str = os.getenv(
         "KENYALAW_BASE_URL", "https://kenyalaw.org/kl/index.php"
     )
@@ -36,10 +33,8 @@ class Settings:
     ]
     REQUEST_DELAY_SECONDS: float = float(os.getenv("REQUEST_DELAY_SECONDS", "2"))
 
-    # PDF storage
     PDF_STORAGE_PATH: str = os.getenv("PDF_STORAGE_PATH", "/tmp/bungewatch/pdfs")
 
-    # Claude cost per token (Haiku pricing, USD)
     HAIKU_INPUT_COST_PER_1K: float = 0.00025
     HAIKU_OUTPUT_COST_PER_1K: float = 0.00125
 

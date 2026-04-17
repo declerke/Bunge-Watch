@@ -14,7 +14,6 @@ from components.footer import render_footer
 st.title("📊 Accountability")
 st.caption("Who is introducing legislation — and how much of it passes?")
 
-# ── Pipeline overview — all 319 bills ─────────────────────────────────────────
 st.subheader("📈 Bill Pipeline — All Bills")
 
 overview = get_pipeline_overview()
@@ -52,7 +51,6 @@ if not overview.empty:
 
 st.divider()
 
-# ── Foreign-inspired bills ─────────────────────────────────────────────────────
 st.subheader("🌍 Foreign-Inspired Bills")
 st.caption("Bills with TF-IDF cosine similarity ≥ 20 against the 15-law foreign reference corpus")
 
@@ -81,7 +79,6 @@ else:
 
 st.divider()
 
-# ── Sponsor section ────────────────────────────────────────────────────────────
 st.subheader("🏅 Sponsor Leaderboard")
 st.info(
     "Sponsor data is only available for bills sourced from **KenyaLaw** (43 bills). "

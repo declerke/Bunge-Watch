@@ -13,7 +13,6 @@ from components.footer import render_footer
 st.title("📋 Browse Bills")
 st.caption("All active bills currently before Parliament")
 
-# ── Filters ───────────────────────────────────────────────────────────────────
 with st.expander("🔽 Filters", expanded=True):
     fc1, fc2, fc3, fc4 = st.columns(4)
 
@@ -28,7 +27,6 @@ with st.expander("🔽 Filters", expanded=True):
 
     foreign_only = st.checkbox("🌍 Foreign-inspired bills only", value=False)
 
-# ── Data ──────────────────────────────────────────────────────────────────────
 bills = get_active_bills(
     stage_filter=stage if stage != "All" else None,
     chamber_filter=chamber if chamber != "All" else None,
@@ -46,7 +44,6 @@ if bills.empty:
     render_footer()
     st.stop()
 
-# ── Table view ────────────────────────────────────────────────────────────────
 for _, bill in bills.iterrows():
     with st.container(border=True):
         row1c1, row1c2, row1c3 = st.columns([5, 2, 1])

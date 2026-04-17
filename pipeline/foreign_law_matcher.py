@@ -21,10 +21,6 @@ from pipeline.logger import get_logger
 log = get_logger("foreign_law_matcher")
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
 def _tokenise(s: str) -> list[str]:
     """Lowercase alpha-only tokens, length ≥ 3, excluding stopwords."""
     _STOP = {
@@ -86,10 +82,6 @@ def _build_explanation(bill_title: str, law_name: str,
     )
 
 
-# ---------------------------------------------------------------------------
-# Main matching logic
-# ---------------------------------------------------------------------------
-
 def match_foreign_laws(bill_id: str, bill_title: str, bill_text: str,
                         bill_keywords: list[str],
                         text_sha256: str) -> Optional[list[dict]]:
@@ -99,7 +91,6 @@ def match_foreign_laws(bill_id: str, bill_title: str, bill_text: str,
     """
     engine = get_engine()
 
-    # Cache check
     with engine.connect() as conn:
         existing = conn.execute(
             text("""
@@ -114,7 +105,6 @@ def match_foreign_laws(bill_id: str, bill_title: str, bill_text: str,
             log.info(f"  {bill_id}: Foreign matches cached, skipping")
             return None
 
-    # Load foreign laws
     with engine.connect() as conn:
         foreign_laws = conn.execute(
             text("SELECT id, jurisdiction, law_name, summary FROM foreign_laws ORDER BY id")
@@ -124,7 +114,6 @@ def match_foreign_laws(bill_id: str, bill_title: str, bill_text: str,
         log.warning("  No foreign laws seeded — skipping foreign law matching")
         return []
 
-    # Build bill TF vector from text + keywords
     bill_corpus = f"{bill_title} {' '.join(bill_keywords)} {bill_text[:4000]}"
     bill_vec = _tf(_tokenise(bill_corpus))
 
@@ -143,7 +132,6 @@ def match_foreign_laws(bill_id: str, bill_title: str, bill_text: str,
                                                   jurisdiction, terms),
             })
 
-    # Sort by score, keep top 3
     matches.sort(key=lambda m: m["similarity_score"], reverse=True)
     matches = matches[:3]
 

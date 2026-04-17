@@ -1,13 +1,3 @@
-"""
-BungeWatch Kenya — Daily Legislative Intelligence Pipeline
-Airflow DAG: 10 tasks, runs daily at 06:00 Africa/Nairobi.
-
-Task graph:
-    scrape_kenyalaw ─┐
-                     ├─► consolidate_and_detect ─► download_pdfs ─► parse_pdf_text
-    scrape_parliament┘       ─► extract_keywords ─► generate_summaries
-                             ─► compare_foreign_laws ─► dbt_run ─► dbt_test ─► log_summary
-"""
 import os
 import sys
 from datetime import datetime, timedelta
@@ -16,7 +6,6 @@ from airflow.sdk import DAG
 from airflow.providers.standard.operators.python import PythonOperator
 from airflow.providers.standard.operators.bash import BashOperator
 
-# Ensure pipeline and scrapers are importable from /opt/airflow
 sys.path.insert(0, "/opt/airflow")
 
 DBT_DIR = "/opt/airflow/dbt"
@@ -42,8 +31,6 @@ with DAG(
     tags=["bungewatch", "civic", "legislative"],
 ) as dag:
 
-    # ── 1 & 2: Scrape sources in parallel ─────────────────────────────────────
-
     def _scrape_kenyalaw(**ctx):
         from scrapers.kenyalaw_scraper import run
         run()
@@ -62,8 +49,6 @@ with DAG(
         python_callable=_scrape_parliament,
     )
 
-    # ── 3: Detect stage changes ────────────────────────────────────────────────
-
     def _detect_changes(**ctx):
         from pipeline.change_detector import detect_and_record_changes
         stats = detect_and_record_changes()
@@ -73,8 +58,6 @@ with DAG(
         task_id="detect_changes",
         python_callable=_detect_changes,
     )
-
-    # ── 4: Download PDFs ───────────────────────────────────────────────────────
 
     def _download_pdfs(**ctx):
         from pipeline.pdf_downloader import download_pending_bills
@@ -86,8 +69,6 @@ with DAG(
         python_callable=_download_pdfs,
     )
 
-    # ── 5: Parse PDF text ──────────────────────────────────────────────────────
-
     def _parse_pdfs(**ctx):
         from pipeline.pdf_parser import parse_all_downloaded
         stats = parse_all_downloaded(years=[2025, 2026])
@@ -97,8 +78,6 @@ with DAG(
         task_id="parse_pdf_text",
         python_callable=_parse_pdfs,
     )
-
-    # ── 6: Extract keywords ────────────────────────────────────────────────────
 
     def _extract_keywords(**ctx):
         from pipeline.keyword_extractor import enrich_all_bills
@@ -110,8 +89,6 @@ with DAG(
         python_callable=_extract_keywords,
     )
 
-    # ── 7: Generate Claude summaries ───────────────────────────────────────────
-
     def _generate_summaries(**ctx):
         from pipeline.claude_summarizer import summarise_all_bills
         stats = summarise_all_bills()
@@ -122,8 +99,6 @@ with DAG(
         python_callable=_generate_summaries,
     )
 
-    # ── 8: Foreign law comparison ──────────────────────────────────────────────
-
     def _compare_foreign_laws(**ctx):
         from pipeline.foreign_law_matcher import match_all_bills
         stats = match_all_bills()
@@ -133,8 +108,6 @@ with DAG(
         task_id="compare_foreign_laws",
         python_callable=_compare_foreign_laws,
     )
-
-    # ── 9: dbt run ─────────────────────────────────────────────────────────────
 
     t_dbt_run = BashOperator(
         task_id="dbt_run",
@@ -156,8 +129,6 @@ with DAG(
         append_env=True,
     )
 
-    # ── 10: dbt test ───────────────────────────────────────────────────────────
-
     t_dbt_test = BashOperator(
         task_id="dbt_test",
         bash_command=(
@@ -175,8 +146,6 @@ with DAG(
         },
         append_env=True,
     )
-
-    # ── 11: Log summary ────────────────────────────────────────────────────────
 
     def _log_summary(**ctx):
         ti = ctx["ti"]
@@ -205,7 +174,6 @@ with DAG(
         trigger_rule="all_done",
     )
 
-    # ── Task dependencies ──────────────────────────────────────────────────────
     [t_scrape_kenyalaw, t_scrape_parliament] >> t_detect_changes
     t_detect_changes >> t_download_pdfs >> t_parse_pdfs
     t_parse_pdfs >> t_extract_keywords >> t_generate_summaries

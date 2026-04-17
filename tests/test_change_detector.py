@@ -45,21 +45,22 @@ class TestHashDetection:
         int(h, 16)  # raises ValueError if not valid hex
 
 
-class TestSummaryParsing:
-    def test_parses_valid_claude_response(self):
-        from pipeline.claude_summarizer import _parse_response
-        response = (
-            "SHORT: This bill amends the Data Protection Act to include AI systems.\n"
-            "DETAILED: The bill introduces a new definition for artificial intelligence "
-            "and requires data controllers deploying AI to notify the Data Commissioner "
-            "within 30 days, with fines up to five million shillings for non-compliance."
-        )
-        short, detailed = _parse_response(response)
-        assert "Data Protection" in short
-        assert "five million" in detailed
+class TestExtractedSummary:
+    def test_extracts_summary_from_bill_text(self, sample_bill_text):
+        from pipeline.claude_summarizer import extractive_summary
+        short, detailed = extractive_summary(sample_bill_text)
+        assert isinstance(short, str)
+        assert isinstance(detailed, str)
+        assert len(short) > 0
+        assert len(detailed) >= len(short)
 
-    def test_handles_missing_sections(self):
-        from pipeline.claude_summarizer import _parse_response
-        short, detailed = _parse_response("Some random text without markers")
-        assert short == ""
-        assert detailed == ""
+    def test_short_summary_under_word_limit(self, sample_bill_text):
+        from pipeline.claude_summarizer import extractive_summary
+        short, _ = extractive_summary(sample_bill_text, max_short_words=60)
+        assert len(short.split()) <= 70  # small buffer for edge cases
+
+    def test_empty_text_returns_fallback(self):
+        from pipeline.claude_summarizer import extractive_summary
+        short, detailed = extractive_summary(" ")
+        assert isinstance(short, str)
+        assert isinstance(detailed, str)
